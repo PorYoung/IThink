@@ -1,0 +1,2 @@
+1.腾讯AI语音合成text字符串带感叹号、空格等，sign会无效
+2.返回的base64可以直接通过new Buffer(data,'base64')解码并写入mp3文件

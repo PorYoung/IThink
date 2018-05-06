@@ -5,3 +5,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 static/
+config/
+config/index.js
+test.js
+test2.js
+notes

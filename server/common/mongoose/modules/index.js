@@ -1,5 +1,21 @@
 import mongoose from '../config'
 
+const managerSchema = new mongoose.Schema({
+    username:{
+        type: String,
+        required: true,
+        unique: true
+    },
+    password:{
+        type: String,
+        required: true
+    },
+    recommendations: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'recommendation'
+    }]
+})
+
 const userSchema = new mongoose.Schema({
     //wechat openid
     openid: {
@@ -66,7 +82,7 @@ const ideaSchema = new mongoose.Schema({
         type: Number,
         default: 0,
         min: 0
-    }
+    } 
 })
 
 const commentSchema = new mongoose.Schema({
@@ -98,7 +114,11 @@ const recommendationSchema = new mongoose.Schema({
     star: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'star'
-    }
+    },
+    manager: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'manager'
+    }]
 })
 
 const starSchema = new mongoose.Schema({
@@ -109,6 +129,7 @@ const starSchema = new mongoose.Schema({
     }]
 })
 
+const manager = mongoose.model('manager', managerSchema)
 const user = mongoose.model('user', userSchema)
 const idea = mongoose.model('idea', ideaSchema)
 const comment = mongoose.model('comment', commentSchema)
@@ -116,6 +137,7 @@ const recommendation = mongoose.model('recommendation', recommendationSchema)
 const star = mongoose.model('star', starSchema)
 export default {
     ObjectId: mongoose.Types.ObjectId,
+    manager,
     user,
     idea,
     comment,

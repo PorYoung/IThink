@@ -1,2 +1,8 @@
 {
+    "jshint.enable": false,
+    "jshint.excludePath": "../node_modules",
+    "jshint.options": {
+        "node": true,
+        "esversion": 6
+    }
 }

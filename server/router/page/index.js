@@ -6,5 +6,8 @@ const router = express.Router()
 
 router
     .get('/', Manager.page_index)
+    .get('/login', Manager.page_login)
+    .get('/management', Manager.page_management)
+    .post('/login', Manager.fun_login)
 
 export default router

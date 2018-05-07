@@ -32,9 +32,12 @@ app.use(session({
 	saveUninitialized: true,
 }))
 
+//指定模板位置
+app.set('views', __dirname + '/views')
+
 app.use(router)
 
-app.get('/',(req,res)=>{
+app.get('/tts',(req,res)=>{
     res.send('<a href="/speech_tencent">Tencent Test!</a><br><a href="/speech_xf">XF Test</a>')
 })
 app.get('/speech_tencent',async (req,res)=>{

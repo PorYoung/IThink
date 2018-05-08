@@ -14,7 +14,7 @@
 
     static async page_management(req,res){
         if(req.session.username){
-            return res.sendFile(path.join(process.cwd(),'/server/views/mangement.html'))
+            return res.sendFile(path.join(process.cwd(),'/server/views/management.html'))
         }else{
             return res.redirect('/login')
         }

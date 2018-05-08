@@ -1,6 +1,6 @@
-window.$ = require('../../lib/jquery-3.3.1.min')
 import '../../lib/bootstrap-3.3.7-dist/css/bootstrap.min.css'
 import './login.css'
+window.$ = require('../../lib/jquery-3.3.1.min')
 $(($) => {
     let login = () => {
         let username = $("#username").val()

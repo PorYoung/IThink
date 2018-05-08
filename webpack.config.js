@@ -1,6 +1,7 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const cleanWebpackPlugin = require('clean-webpack-plugin')
+const LessPluginCleanCSS = require('less-plugin-clean-css')
 const webpack = require('webpack')
 module.exports = {
     devtool: 'eval-source-map',
@@ -32,17 +33,46 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.css$/,
+                test: /\.css/,
                 use: [
-                    'style-loader', 'css-loader'
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            importLoaders: 1
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.(less)/,
+                use: [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            importLoaders: 1
+                        }
+                    },
+                    'postcss-loader',
+                    {
+                        loader: 'less-loader',
+                        options: {
+                            lessPlugins: [
+                                new LessPluginCleanCSS({
+                                    advanced: true
+                                })
+                            ]
+                        }
+                    }
                 ]
             },
             {
                 // test: /\.(eot|svg|ttf|woff|woff2|png)\w*/,
                 test: /\.(eot|svg|ttf|woff|woff2)\w*/,
                 use: [{
-                    loader:'file-loader',
-                    options:{
+                    loader: 'file-loader',
+                    options: {
                         name: 'font/[name].[hash].[ext]',
                         publicPath: '/static/dist/'
                     }
@@ -56,17 +86,13 @@ module.exports = {
                         limit: 4096, // 把小于50000 byte的文件打包成Base64的格式写入JS
                         name: 'image/[name].[hash].[ext]',
                         publicPath: '/static/dist/'
-                        // output: path.resolve(__dirname, 'static/dist/image/') // 当大于时使用file-loader将图片打包到images目录下
                     }
                 }]
             },
             {
                 test: /\.(htm|html)$/,
                 use: {
-                    loader: 'html-loader',
-                    options: {
-                        // attrs: [':data-src']
-                    }
+                    loader: 'html-loader'
                 }
             }
         ]
@@ -96,20 +122,4 @@ module.exports = {
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NamedModulesPlugin()
     ],
-    //路径别名配置，让模块加载更直观
-    // resolve: {
-    //     //设置可省略文件后缀名(注:如果有文件没有后缀设置‘’会在编译时会报错,必须改成' '中间加个空格。ps:虽然看起来很强大但有时候省略后缀真不知道加载是啥啊~);
-    //     extensions: [' ', '.css', '.less', '.js', '.json', '.vue'],
-    //     //模块路径查找时先从数组第一个开始寻找，找不到在去node_modules目录下寻找
-    //     modules: [path.resolve(__dirname, "src"), "node_modules"],
-    //     //别名设置
-    //     alias: {
-    //         "components": path.resolve(__dirname, 'src/components'),
-    //         "lib": path.resolve(__dirname, 'src/lib'),
-    //     }
-    // },
-    devServer: {
-        contentBase: ['./static/dist', './server/views'],
-        port: '3000'
-    }
 }

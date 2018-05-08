@@ -1,0 +1,47 @@
+@import '../../lib/bootstrap-3.3.7-dist/less/bootstrap.less';
+@header-height: 80px;
+.row,
+* {
+    margin: 0;
+}
+
+.display-flex(@flow: row nowrap, @justicfy: flex-start, @align: stretch, @flex: 0 1 auto) {
+    display: flex;
+    flex-flow: @flow;
+    justify-content: @justicfy;
+    align-items: @align;
+    flex: @flex;
+}
+
+.container,
+.container-fluid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 0;
+    background-image: linear-gradient(45deg, rgb(253, 219, 146) 0%, rgb(209, 253, 255) 100%);
+    .display-flex(column);
+    
+    .header {
+        height: @header-height;
+        line-height: @header-height;
+        .logo {
+            width: 100%;
+        }
+    }
+    .wrap {
+        flex: 1;
+        div {
+            height: 100%;
+        }
+    }
+    .left {
+        background-color: rgba(255, 255, 255, .7);
+        border-radius: 20px;
+    }
+    .right {
+        border: 1px solid #ccc;
+    }
+}

@@ -1,9 +1,0 @@
-body{
-    background: url('../../image/default_background.jpg')
-}
-.left{
-    background-color: rgba(255, 255, 255, .7);
-}
-.right{
-    border: 1px solid #ccc;
-}

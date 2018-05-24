@@ -1,5 +1,8 @@
- import path from 'path'
+ import path, { resolve } from 'path'
  import md5 from 'md5'
+ import formidable from 'formidable'
+ import fs from 'fs'
+ import myUtils from '../../common/utils'
  export default class{
     static async page_index(req,res){
         return res.send('hello world!')
@@ -36,5 +39,126 @@
         }else{
             return res.send('-2')
         }
+    }
+
+    static async fun_uploadRecommendation(req,res){
+        let form = new formidable.IncomingForm()
+        let coverPath = ''
+        let filePath = ''
+        let fields = {}
+        let type = ''
+        let date = new Date()
+
+        form.uploadDir = path.join(process.cwd(),'/static/temp')
+        form.maxFileSize = 20 * 1024 * 1024
+        form.parse(req)
+        form.on('field', (name, value) => {
+            if(name === 'type'){
+                type = value
+            }else if(name === 'date'){
+                date = value
+            }else{
+                fields[name] = value
+            }
+        })
+        form.on('fileBegin',(name,file) => {
+            let type = file.type.split('/')[1].toLowerCase()
+            let filename = md5(file.name.concat(new Date().getTime())).concat('.').concat(type)
+            file.name = filename
+            if(type === 'mp3'|| type === 'wav'){
+                filePath =  path.join('/static/sound/music/',filename)
+                file.path = path.join(process.cwd(),filePath)
+            }else{
+                coverPath = path.join('/static/image/cover/',filename)
+                file.path = path.join(process.cwd(),coverPath)
+            }
+        })
+        form.on('end',async() => {
+            //fetch sound
+            let _id = new db.ObjectId()
+            let fragments = []
+            let detail = {}
+            let Reg = new RegExp("/[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]/g")
+            for(let key in fields){
+                if(fields.hasOwnProperty(key)){
+                    if(key.includes('title')){
+                        fields[key] = fields[key].substring(0,myUtils.tencent_tts_maxLength)
+                        let filePath = path.join('/static/sound/recommendation',_id.toString()+'_title.mp3')
+                        fragments[0] = await myUtils.tencent_tts('标题，'.concat(fields[key].replace(Reg,'')),filePath)
+                    }else if(key.includes('content')){
+                        let contentStr = fields[key].replace(/\r|\n|\s/g,'')
+                        let len = contentStr.length
+                        let idx = 3
+                        while(len > myUtils.xf_tts_maxLength){  
+                            let filePath = path.join('/static/sound/recommendation',_id.toString()+'_'+idx+'.mp3')
+                            len -= myUtils.xf_tts_maxLength
+                            let start = (idx - 3) * myUtils.xf_tts_maxLength
+                            let end = start + myUtils.xf_tts_maxLength
+                            let text = contentStr.substring(start,end)
+                            if(idx === 3){
+                                text = '主要内容，'.concat(text)
+                            }
+                            console.log(text)
+                            fragments[idx] = await myUtils.xf_tts(text,filePath)
+                            console.log(fragments[idx])
+                            ++idx
+                        }
+                        let filePath = path.join('/static/sound/recommendation',_id.toString()+'_'+idx+'.mp3')
+                        let start = (idx - 3) * myUtils.xf_tts_maxLength
+                        let end = start + myUtils.xf_tts_maxLength
+                        let text = contentStr.substring(start,end)
+                        fragments[idx] = await myUtils.xf_tts(text,filePath)
+                    }else if(key.includes('coverUrl')){
+                        if('' !== coverPath && '' === fields[key]){
+                            fields[key] = coverPath
+                        }
+                    }
+                }
+            }
+            if(type === 'music' && '' !== filePath && '' === fields.musicUrl){
+                fields.musicUrl = filePath
+            }
+            Object.assign(detail,fields)
+            //author tts            
+            let managerPath = path.join('/static/sound/manager',md5(req.session.username).concat('.mp3'))
+            let stat
+            try{
+                stat = fs.statSync(path.join(process.cwd(),managerPath))
+            }catch(e){
+                let name = req.session.username
+                let text = '编辑，'.concat(name.replace(Reg,''))
+                fragments[1] = await myUtils.tencent_tts(text,managerPath)
+            }
+            if(stat){
+                fragments[1] = managerPath
+            }
+            //date tts
+            let datePath = path.join('/static/sound/date',date+'.mp3')
+            stat = undefined
+            try{
+                stat = fs.statSync(path.join(process.cwd(),datePath))
+            }catch(e){
+                let text = '日期，'.concat(date.replace(/-/g,'.'))
+                fragments[2] = await myUtils.tencent_tts(text,datePath)
+            }
+            if(stat){
+                fragments[2] = datePath
+            }
+            let managerId = await db.manager.findOne({username:req.session.username})
+            let dbData = await db.recommendation.create({
+                _id: _id,
+                type: type,
+                manager: managerId._id,
+                detail: detail,
+                soundFragments: fragments,
+                date: new Date(date),
+                uploadDate: new Date()
+            })
+            return res.send(dbData)
+            return res.send('1')
+        })
+        form.on('error', (err) => {
+            return res.send('-1')
+        })
     }
 }

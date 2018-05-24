@@ -4,6 +4,7 @@ import dbConnetion from './connection'
 import Modules from './modules'
 
 const db = {
+    ObjectId: Modules.ObjectId,
     manager: Modules.manager,
     user:Modules.user,
     idea:Modules.idea,

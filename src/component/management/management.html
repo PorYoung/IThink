@@ -10,15 +10,118 @@
     <div class="container-fluid">
         <header class="header row col-sm-12">
             <div class="col-sm-3">
-                <img class="logo" src="../../image/logo.png">
+                <a href="#/"><img class="logo" src="../../image/logo.png"></a>
             </div>
             <div class="col-sm-9">
                 <h1>IThink Back-End Management System</h1>
             </div>
         </header>
-        <div class="wrap row col-md-12">
-            <div class="left col-md-4"></div>
-            <div class="right col-md-8"></div>
+        <div class="wrap row col-xs-12">
+            <div class="left col-xs-1">
+                <ul class="fa-ul list">
+                    <li><a href="#/recommendation"><i class="fa-li fa fa-cubes"></i><span>推荐</span></a></li>
+                    <li><a href="#/idea"><i class="fa-li fa fa-paper-plane"></i><span>想法</span></a></li>
+                    <li><a href="#/comment"><i class="fa-li fa fa-commenting-o"></i><span>评论</span></a></li>
+                    <li><a href="#/user"><i class="fa-li fa fa-user-o"></i><span>用户</span></a></li>
+                </ul>
+            </div>
+            <div class="right col-xs-11">
+                <div class="info active">welcome to IThink Management System</div>
+                <div class="recommendation">
+                    <div class="type-choose">
+                        <ul class="fa-ul list">
+                            <li><a href="#/recommendation?type=music"><i class="fa-li fa fa-music"></i><span>音乐</span></a></li>
+                            <li><a href="#/recommendation?type=news"><i class="fa-li fa fa-newspaper-o"></i><span>图文</span></a></li>
+                            <li><a href="#/recommendation?type=book"><i class="fa-li fa fa-book"></i><span>书籍</span></a></li>
+                        </ul>
+                    </div>
+                    <form class="form-all actives">
+                        <div>
+                            lists
+                        </div>
+                    </form>
+                    <form class="form-music">
+                        <div class="form-group">
+                            <label for="musicTitle">Title:</label>
+                            <input type="text" name="title" id="musicTitle">
+                        </div>
+                        <div class="form-group">
+                            <label for="musicFile">Upload Music File(mp3/wav):</label>
+                            <input type="file" accept="audio/mpeg,audio/wav" name="musicFile" id="musicFile">
+                        </div>
+                        <div class="form-group">
+                            <label for="musicCover">Music cover image</label>
+                            <input type="file" accept="image/jpeg,image/png,image/gif" name="musicCover" id="musicCover">
+                        </div>
+                        <div class="form-group">
+                            <label for="musicCoverUrl">Music Cover URL:</label>
+                            <input type="text" name="coverUrl" id="musicCoverUrl">
+                        </div>
+                        <div class="form-group">
+                            <label for="musicUrl">Music URL:</label>
+                            <input type="text" name="musicUrl" id="musicUrl">
+                        </div>
+                        <div class="form-group">
+                            <label for="musicContent">content:</label>
+                            <textarea name="content" id="musicContent"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Date:</label>
+                            <input type="date" name="date" id="musicDate">
+                        </div>
+                        <button class="btn btn-md btn-primary submit" type="button">submit</button>
+                    </form>
+                    <form class="form-news">
+                        <div class="form-group">
+                            <label for="newsTitle">Title:</label>
+                            <input type="text" name="title" id="newsTitle">
+                        </div>
+                        <div class="form-group">
+                            <label for="newsCover">Upload cover image</label>
+                            <input type="file" accept="image/jpeg,image/png,image/gif" name="newsCover" id="newsCover">
+                        </div>
+                        <div class="form-group">
+                            <label for="newsCoverUrl">Cover image URL:</label>
+                            <input type="text" name="coverUrl" id="newsCoverUrl">
+                        </div>
+                        <div class="form-group">
+                            <label for="newsContent">content:</label>
+                            <textarea name="content" id="newsContent"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Date:</label>
+                            <input type="date" name="date" id="newsDate">
+                        </div>
+                        <button class="btn btn-md btn-primary submit" type="button">submit</button>
+                    </form>
+                    <form class="form-book">
+                        <div class="form-group">
+                            <label for="bookTitle">Title:</label>
+                            <input type="text" name="title" id="bookTitle">
+                        </div>
+                        <div class="form-group">
+                            <label for="bookCover">Upload cover image</label>
+                            <input type="file" accept="image/jpeg,image/png,image/gif" name="bookCover" id="bookCover">
+                        </div>
+                        <div class="form-group">
+                            <label for="bookCoverUrl">Cover image URL:</label>
+                            <input type="text" name="coverUrl" id="coverUrl">
+                        </div>
+                        <div class="form-group">
+                            <label for="bookContent">Introduction:</label>
+                            <textarea name="content" id="bookContent"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Date:</label>
+                            <input type="date" name="date" id="bookDate">
+                        </div>
+                        <button class="btn btn-md btn-primary submit" type="button">submit</button>
+                    </form>
+                </div>
+                <div class="idea">idea</div>
+                <div class="comment">comment</div>
+                <div class="user">user</div>
+            </div>
         </div>
     </div>
 </body>

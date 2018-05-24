@@ -1,4 +1,6 @@
 @import '../../lib/bootstrap-3.3.7-dist/less/bootstrap.less';
+@import '../../lib/animate.css';
+@import '../../lib/font-awesome-4.7.0/less/font-awesome.less';
 @header-height: 80px;
 .row,
 * {
@@ -12,6 +14,11 @@
     align-items: @align;
     flex: @flex;
 }
+.ul-list-row{
+    margin: 0;
+    padding: 15px 25px;
+    .display-flex(row nowrap, space-around, center);
+}
 
 .container,
 .container-fluid {
@@ -20,28 +27,102 @@
     right: 0;
     top: 0;
     bottom: 0;
-    padding: 0;
     background-image: linear-gradient(45deg, rgb(253, 219, 146) 0%, rgb(209, 253, 255) 100%);
     .display-flex(column);
     
     .header {
         height: @header-height;
         line-height: @header-height;
+        h1{
+            white-space: nowrap;
+        }
         .logo {
             width: 100%;
         }
     }
     .wrap {
-        flex: 1;
-        div {
-            height: 100%;
+        padding: 15px 15px 0;
+        .display-flex(column, initial, initial, 1);
+        .left {
+            width: 100%;
+            background-color: rgba(255, 255, 255, .7);
+            border-radius: 20px;
+            .list{
+                .ul-list-row();
+            }
+        }
+        .right {
+            width: 100%;
+            margin-top: 15px;
+            border: 1px solid #ccc;
+            .display-flex(column, initial, initial, 1);
+
+            > div{
+                display: none!important;
+                .display-flex(column,initial,initial,1);
+            }
+            .active{
+                display: flex!important;
+            }
+
+            .recommendation{
+                .type-choose{
+                    .list{
+                        .ul-list-row();
+
+                        a:active{
+                            background: red;
+                        }
+                    }
+                }
+                > form{
+                    display: none!important;
+                    padding: 0 25%;
+                    .display-flex(column, space-around, initial, 1);
+                    .form-group{
+                        label{
+                            display: block;
+                        }
+                        input{
+                            width: 100%;
+                            border: none;
+                            border-bottom: 2px solid #337ab7;
+                            outline: none;
+                            background: transparent;
+                        }
+                        input[type=date]{
+                            width: auto;
+                        }
+                        input:focus{
+                            border-bottom: 3px solid #FF6666;
+                            transition: border .5s;
+                        }
+                        textarea{
+                            background: transparent;
+                            width: 100%;
+                        }
+                    }
+                }
+                .active{
+                    display: flex!important;
+                }
+            }
         }
     }
-    .left {
-        background-color: rgba(255, 255, 255, .7);
-        border-radius: 20px;
-    }
-    .right {
-        border: 1px solid #ccc;
+}
+
+@media screen and (max-width:767px){
+    .container-fluid {
+        .header{
+            height: auto;
+            text-align: center;
+            h1{
+                font-size: 1.5em;
+            }
+            .logo{
+                width: 50%;
+            }
+        }
+        
     }
 }

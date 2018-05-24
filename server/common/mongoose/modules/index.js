@@ -118,7 +118,8 @@ const recommendationSchema = new mongoose.Schema({
     manager: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'manager'
-    }]
+    }],
+    uploadDate: Date
 })
 
 const starSchema = new mongoose.Schema({

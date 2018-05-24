@@ -55,7 +55,10 @@ const tencent_tts = async (text, saveFlag, options) => {
     let sign = tencent_getReqSign(params, appkey)
     params.sign = sign
     let response = await tencent_doHttpPost(config.tencent_tts_url, params)
-    let savePath = path.join('/static/voice/default', saveFlag)
+    let savePath = '/static/sound/default/'.concat(new Date().getTime).concat('.mp3')
+    if(saveFlag){
+        savePath = saveFlag
+    }
     if (response.ret === 0) {
         if (saveFlag === false) {
             return response.data.speech
@@ -65,6 +68,7 @@ const tencent_tts = async (text, saveFlag, options) => {
         }
     } else {
         console.log(response)
+        //return default
     }
 }
 
@@ -97,7 +101,10 @@ const xf_tts = async (text, saveName, options) => {
         },
         text: 'text=' + text
     }
-    let savePath = path.join('/static/voice/temp', saveName)
+    let savePath = '/static/sound/default/'.concat(new Date().getTime).concat('.mp3')
+    if(saveName){
+        savePath = saveName
+    }
     let writeStream = fs.createWriteStream(path.join(process.cwd(), savePath))
     let response = request
         .post(config.xf_tts_url)
@@ -112,6 +119,8 @@ const xf_tts = async (text, saveName, options) => {
 }
 
 export default {
+    tencent_tts_maxLength: 32,
+    xf_tts_maxLength: 240,
     tencent_tts: tencent_tts,
     xf_tts: xf_tts
 }

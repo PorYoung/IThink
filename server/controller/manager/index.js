@@ -5,18 +5,19 @@
  import myUtils from '../../common/utils'
  export default class{
     static async page_index(req,res){
-        return res.send('hello world!')
+        // let query = await db.recommendation.findOne({})
+        res.redirect('/login')
     }
 
     static async page_login(req,res){
-        if(req.session.username){
+        if(req.session.userid){
             return res.redirect('/management')
         }
         return res.sendFile(path.join(process.cwd(),'/server/views/login.html'))
     }
 
     static async page_management(req,res){
-        if(req.session.username){
+        if(req.session.userid){
             return res.sendFile(path.join(process.cwd(),'/server/views/management.html'))
         }else{
             return res.redirect('/login')
@@ -34,7 +35,7 @@
         }
         password = md5(password.concat(username))
         if(managerInfo.password==password){
-            req.session.username = username
+            req.session.userid = managerInfo._id.toString()
             return res.send('1')
         }else{
             return res.send('-2')
@@ -120,19 +121,29 @@
             }
             Object.assign(detail,fields)
             //author tts            
-            let managerPath = path.join('/static/sound/manager',md5(req.session.username).concat('.mp3'))
+            let managerPath = path.join('/static/sound/manager',req.session.userid.concat('.mp3'))
             let stat
             try{
                 stat = fs.statSync(path.join(process.cwd(),managerPath))
             }catch(e){
-                let name = req.session.username
-                let text = '编辑，'.concat(name.replace(Reg,''))
-                fragments[1] = await myUtils.tencent_tts(text,managerPath)
+                let query = await db.manager.findOne({_id:db.ObjectId(req.session.userid)})
+                if(query){
+                    let name = query.username
+                    let text = '编辑，'.concat(name.replace(Reg,''))
+                    fragments[1] = await myUtils.tencent_tts(text,managerPath)
+                }else{
+                    //return default error
+                    fragments[1] = '/static/sound/default/error_lost.mp3'
+                }
             }
             if(stat){
                 fragments[1] = managerPath
             }
             //date tts
+            let dd = date.split('-')
+            if(dd[1][0] === '0'){
+                date = dd[0] + '-' + dd[1][1] + '-' + dd[2]
+            }
             let datePath = path.join('/static/sound/date',date+'.mp3')
             stat = undefined
             try{
@@ -144,14 +155,13 @@
             if(stat){
                 fragments[2] = datePath
             }
-            let managerId = await db.manager.findOne({username:req.session.username})
             let dbData = await db.recommendation.create({
                 _id: _id,
                 type: type,
-                manager: managerId._id,
+                manager: req.session.userid,
                 detail: detail,
                 soundFragments: fragments,
-                date: new Date(date),
+                date: date,
                 uploadDate: new Date()
             })
             return res.send(dbData)

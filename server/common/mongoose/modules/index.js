@@ -102,7 +102,7 @@ const recommendationSchema = new mongoose.Schema({
     type: String,
     detail: Object,
     soundFragments: Array,
-    date: Date,
+    date: String,
     users: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'
@@ -115,10 +115,10 @@ const recommendationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'star'
     },
-    manager: [{
+    manager: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'manager'
-    }],
+    },
     uploadDate: Date
 })
 

@@ -1,17 +1,12 @@
 import config from '../../../config'
 import request from 'superagent'
 import md5 from 'md5'
+import path from 'path'
+import myUtils from '../../common/utils'
 export default class {
     static async onLogin(req, res) {
-        let code = req.query.code
-        let userInfo = req.query.userInfo
-        try{
-            userInfo = JSON.parse(userInfo)
-        }catch(e){
-            return res.send({
-                errMsg: 'cannot get userInfo'
-            })
-        }
+        let code = req.body.code
+        let userInfo = req.body.userInfo
         if (code && userInfo) {
             //authenticate against wechat server
             let url = `${config.wechat_login_url}?appid=${config.wechat_AppID}&secret=${config.wechat_AppSecret}&js_code=${code}&grant_type=authorization_code`
@@ -36,6 +31,8 @@ export default class {
                 }
                 if(!queryData){
                     //user does not exist and create a user record
+                    let Reg = new RegExp("/[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]/g")
+                    await myUtils.tencent_tts(userInfo.nickName.replace(Reg,''),path.join('/static/sound/user',info.openid + '.mp3'))
                     queryData = await db.user.create({openid:info.openid,nickName:userInfo.nickName,avatarUrl:userInfo.avatarUrl})
                     //return first use flag to start using instruction in small program
                     isFirst = true
@@ -44,13 +41,15 @@ export default class {
                 }
                 req.session._id = queryData._id
                 return res.send({
+                    errMsg: '1',
                     isFirst: isFirst,
                     // blindMode: queryData.blindMode,
                     blindMode: false,
                     _id: queryData._id.toString(),
                     nickName: queryData.nickName,
                     avatarUrl: queryData.avatarUrl,
-                    points: queryData.points
+                    points: queryData.points,
+                    signStr: md5(info.openid)
                 })
             } else {
                 return res.send({

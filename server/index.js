@@ -41,9 +41,16 @@ app.get('/tts',(req,res)=>{
     res.send('<a href="/speech_tencent">Tencent Test!</a><br><a href="/speech_xf">XF Test</a>')
 })
 app.get('/speech_tencent',async (req,res)=>{
-	let saveName = '2.mp3'
-	let savePath = await myUtils.tencent_tts('哈哈哈哈，哈哈哈哈，腾讯TTS测试没有问题',saveName,{speaker:5})
-	return res.send(`<audio src="${savePath}" autoplay loop></audio>`)
+	let items = [
+		['单机屏幕可以获取一条帮助','index_alert_']
+	]
+	for(let i = 0;i < items.length;i++){
+		let p = path.join('/static/sound/default',items[i][1])
+		await myUtils.tencent_tts(items[i][0],p,{speaker:7})
+	}
+	// await myUtils.tencent_tts('提示，进入今日推荐页面','index_alert_welcome3.mp3',{speaker:7})
+	// return res.send(`<audio src="${savePath}" autoplay loop></audio>`)
+	return res.send('ok')
 })
 
 app.get('/speech_xf',async (req,res)=>{

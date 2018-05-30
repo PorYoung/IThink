@@ -1,32 +1,38 @@
 import md5 from 'md5'
-export default class{
-    static async managerSessionCheck(req,res,next){
-        if(req.session.userid){
+export default class {
+    static async managerSessionCheck(req, res, next) {
+        if (req.session.userid) {
             next()
-        }else{
+        } else {
             return res.redirect('/login')
         }
     }
-    static async permissionCheck(req,res,next){
-        let sign = req.query.sign
-        let user_id = req.query.user_id
+    static async permissionCheck(req, res, next) {
+        let sign, user_id
+        if (req.method.toLowerCase() === 'post') {
+            sign = req.body.sign
+            user_id = req.body.user_id
+        } else {
+            sign = req.query.sign
+            user_id = req.query.user_id
+        }
         let flag = true
-        if(sign && user_id){
-            let info = await db.user.findOne({_id:db.ObjectId(user_id)},{openid:1})
-            if(info){
+        if (sign && user_id) {
+            let info = await db.user.findOne({_id: db.ObjectId(user_id)}, {openid: 1})
+            if (info) {
                 let signStr = md5(user_id.concat(md5(info.openid)))
-                if(sign === signStr){
+                if (sign === signStr) {
                     next()
-                }else{
+                } else {
                     flag = false
                 }
-            }else{
+            } else {
                 flag = false
             }
-        }else{
+        } else {
             flag = false
         }
-        if(flag === false){
+        if (flag === false) {
             return res.send('Permission Denied')
         }
     }

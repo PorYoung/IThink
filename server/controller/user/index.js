@@ -32,7 +32,8 @@ export default class {
                 if(!queryData){
                     //user does not exist and create a user record
                     let Reg = new RegExp("/[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]/g")
-                    await myUtils.tencent_tts(userInfo.nickName.replace(Reg,''),path.join('/static/sound/user',info.openid + '.mp3'))
+                    let text = '作者，' + userInfo.nickName.replace(Reg,'')
+                    await myUtils.tencent_tts(text,path.join('/static/sound/user',info.openid + '.mp3'))
                     queryData = await db.user.create({openid:info.openid,nickName:userInfo.nickName,avatarUrl:userInfo.avatarUrl})
                     //return first use flag to start using instruction in small program
                     isFirst = true
@@ -43,8 +44,7 @@ export default class {
                 return res.send({
                     errMsg: '1',
                     isFirst: isFirst,
-                    // blindMode: queryData.blindMode,
-                    blindMode: false,
+                    blindMode: queryData.blindMode,
                     _id: queryData._id.toString(),
                     nickName: queryData.nickName,
                     avatarUrl: queryData.avatarUrl,

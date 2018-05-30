@@ -163,8 +163,7 @@
                 soundFragments: fragments,
                 date: date,
                 uploadDate: new Date()
-            })
-            return res.send(dbData)
+            })            
             return res.send('1')
         })
         form.on('error', (err) => {

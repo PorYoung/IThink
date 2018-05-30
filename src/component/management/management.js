@@ -50,33 +50,21 @@ $(($)=>{
                 if(!/audio/.test(musicFile.type)){
                     return alert('audio file type illegal')
                 }
-                if(!!coverFile){
-                    if(!/image/.test(coverFile.type)){
-                        return alert('image file type illegal')
-                    }
-                    for(let i of inputs){
-                        if(i.name.includes('Url')){
-                            continue
-                        }
-                        if(i.value===''){
-                            isEmpty = true
-                        }
-                    }
-                }else{
-                    for(let i of inputs){
-                        if(i.name.includes('musicUrl')){
-                            continue
-                        }
-                        if(i.value===''){
-                            isEmpty = true
-                        }
-                    }
+            }
+            if(!!coverFile){
+                if(!/image/.test(coverFile.type)){
+                    return alert('image file type illegal')
                 }
-            }else{
-                for(let i of inputs){
-                    if(i.value===''){
-                        isEmpty = true
-                    }
+            }
+            for(let i of inputs){
+                if(!!musicFile && i.name.includes('musicUrl')){
+                    continue
+                }
+                if(!!coverFile && i.name.includes('coverUrl')){
+                    continue
+                }
+                if(i.value===''){
+                    isEmpty = true
                 }
             }
         }else{

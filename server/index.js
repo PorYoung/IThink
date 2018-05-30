@@ -42,7 +42,7 @@ app.get('/tts',(req,res)=>{
 })
 app.get('/speech_tencent',async (req,res)=>{
 	let items = [
-		['单机屏幕可以获取一条帮助','index_alert_']
+		['提示，在历史想法页面，左右滑动查看前一天或后一天的想法','help_9.mp3']
 	]
 	for(let i = 0;i < items.length;i++){
 		let p = path.join('/static/sound/default',items[i][1])
@@ -54,8 +54,8 @@ app.get('/speech_tencent',async (req,res)=>{
 })
 
 app.get('/speech_xf',async (req,res)=>{
-	let saveName = '3.mp3'
-	let savePath = await myUtils.xf_tts('我靠，什么鬼异步逻辑，我的Promise全部await还一大堆错误，去你的nodejs',saveName)
+	let saveName = 'xf_test.mp3'
+	let savePath = await myUtils.xf_tts('人生在世，若不能疯狂一次，当埋入黄土之时又如何能够甘心。\n来自大山的孩子，怀揣着梦想，并始终坚持着，多少人仿佛看到了年轻的自己？',saveName)
 	return res.send(`<audio src="${savePath}" autoplay loop></audio>`)
 })
 

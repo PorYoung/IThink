@@ -90,7 +90,7 @@ const xf_tts = async (text, saveName, options) => {
     let xParamBase64 = new Buffer(xParam).toString('base64')
     var timestamp = Date.parse(new Date())
     var curTime = timestamp / 1000;
-    let checkSum = md5(config.xf_ApiKey + curTime + xParamBase64)
+    let checkSum = md5(config.xf_ApiKey_tts + curTime + xParamBase64)
     let opts = {
         header: {
             "X-Appid": config.xf_AppID,
@@ -113,14 +113,75 @@ const xf_tts = async (text, saveName, options) => {
         .pipe(writeStream)
     return new Promise((resolve,reject)=>{
         writeStream.once('close', () => {
-            resolve(savePath)
+            let stats = fs.statSync(path.join(process.cwd(),savePath))
+            if(stats.size < 320){
+                resolve('/static/sound/default/error_lost.mp3')
+            }else{
+                resolve(savePath)
+            }
         })
     })
+}
+
+const xf_recogn = function (filePath) {
+    let timestamp = Date.parse(new Date())
+    let curTime = timestamp / 1000
+    let xParam = { "auf": "16k", "aue": "raw" }
+    xParam = JSON.stringify(xParam)
+    let xParamBase64 = new Buffer(xParam).toString('base64')
+
+    //音频文件
+    let fileData = fs.readFileSync(filePath)
+    let fileBase64 = new Buffer(fileData).toString('base64')
+
+    let xCheckSum = md5(config.xf_ApiKey_recogn + curTime + xParamBase64)
+    let opts = {
+        headers: {
+            "X-Appid": config.xf_AppID,
+            "X-CurTime": curTime,
+            "X-Param": xParamBase64,
+            "X-CheckSum": xCheckSum,
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        }
+    }
+    return new Promise((resolve,reject) => {
+        request
+            .post(config.xf_recogn_url)
+            .set(opts.headers)
+            .send({audio:fileBase64})
+            .end((err,res)=>{
+                if(err){
+                    reject(err)
+                }
+                let response = res.text
+                try{
+                    response = JSON.parse(res.text)
+                }catch(e){
+                    console.log(e)
+                }
+                resolve(response)
+            })
+    })
+}
+
+const normalDate = () => {
+    let date = new Date()
+    let dd = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate()
+    return dd
+}
+
+const toQueryDate = (nd) => {
+    let queryDate = new Date(nd)
+    let nextDate = new Date(queryDate.getTime() + 1000*3600*24)
+    return [queryDate,nextDate]
 }
 
 export default {
     tencent_tts_maxLength: 32,
     xf_tts_maxLength: 240,
-    tencent_tts: tencent_tts,
-    xf_tts: xf_tts
+    tencent_tts,
+    xf_tts,
+    xf_recogn,
+    normalDate,
+    toQueryDate
 }

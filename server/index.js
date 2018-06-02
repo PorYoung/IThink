@@ -41,9 +41,8 @@ app.get('/tts',(req,res)=>{
     res.send('<a href="/speech_tencent">Tencent Test!</a><br><a href="/speech_xf">XF Test</a>')
 })
 app.get('/speech_tencent',async (req,res)=>{
-	let items = [
-		['提示，在历史想法页面，左右滑动查看前一天或后一天的想法','help_9.mp3']
-	]
+	let items = []
+	
 	for(let i = 0;i < items.length;i++){
 		let p = path.join('/static/sound/default',items[i][1])
 		await myUtils.tencent_tts(items[i][0],p,{speaker:7})
@@ -58,5 +57,14 @@ app.get('/speech_xf',async (req,res)=>{
 	let savePath = await myUtils.xf_tts('人生在世，若不能疯狂一次，当埋入黄土之时又如何能够甘心。\n来自大山的孩子，怀揣着梦想，并始终坚持着，多少人仿佛看到了年轻的自己？',saveName)
 	return res.send(`<audio src="${savePath}" autoplay loop></audio>`)
 })
+
+/* app.use(async(req, res, next) => {
+	res.status(404).send('Sorry cant find that!')
+})
+  
+app.use(async(err, req, res, next) => {
+	console.error(err.stack)
+	res.status(500).send('Something broke!')
+}) */
 
 module.exports = app

@@ -1,4 +1,5 @@
 import mongoose from '../config'
+import db from '..';
 
 const managerSchema = new mongoose.Schema({
     username:{
@@ -73,6 +74,11 @@ const ideaSchema = new mongoose.Schema({
     },
     content: String,
     soundFragments: Array,
+    random:{
+        type: Number,
+        default: Math.random(),
+        index:true
+    },
     points: {
         type: Number,
         default: 0,
@@ -82,7 +88,11 @@ const ideaSchema = new mongoose.Schema({
         type: Number,
         default: 0,
         min: 0
-    } 
+    },
+    likes:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    }]
 })
 
 const commentSchema = new mongoose.Schema({
@@ -130,12 +140,18 @@ const starSchema = new mongoose.Schema({
     }]
 })
 
+ideaSchema.index({author:-1,date:-1})
+ideaSchema.index({date:-1,random:-1})
+ideaSchema.index({_id:-1,likes:-1})
+ideaSchema.index({likes:-1,date:-1})
+
 const manager = mongoose.model('manager', managerSchema)
 const user = mongoose.model('user', userSchema)
 const idea = mongoose.model('idea', ideaSchema)
 const comment = mongoose.model('comment', commentSchema)
 const recommendation = mongoose.model('recommendation', recommendationSchema)
 const star = mongoose.model('star', starSchema)
+
 export default {
     ObjectId: mongoose.Types.ObjectId,
     manager,

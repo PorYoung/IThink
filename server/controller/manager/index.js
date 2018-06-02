@@ -110,8 +110,12 @@
                         let text = contentStr.substring(start,end)
                         fragments[idx] = await myUtils.xf_tts(text,filePath)
                     }else if(key.includes('coverUrl')){
-                        if('' !== coverPath && '' === fields[key]){
-                            fields[key] = coverPath
+                        if('' !== coverPath){
+                            if('' === fields[key]){
+                                fields[key] = coverPath
+                            }else{
+                                fs.unlinkSync(path.join(process.cwd(),coverPath))
+                            }
                         }
                     }
                 }

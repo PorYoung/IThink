@@ -39,7 +39,7 @@ const tencent_tts = async (text, saveFlag, options) => {
     let time_stamp = Math.round(new Date().getTime() / 1000)
     let params = {
         app_id: config.tencent_AppID,
-        speaker: '1',
+        speaker: '7',
         format: '3',
         text: text,
         time_stamp: time_stamp,
@@ -68,6 +68,7 @@ const tencent_tts = async (text, saveFlag, options) => {
         }
     } else {
         console.log(response)
+        resolve('/static/sound/default/error_lost.mp3')
         //return default
     }
 }

@@ -32,7 +32,7 @@ export default class {
         recoms = await db.recommendation.find({
             date: today
         })
-        if (recoms) {
+        if (recoms && recoms.length > 0) {
             let len = recoms.length
             let idx = 0
             if (len > 1) {
@@ -109,6 +109,135 @@ export default class {
                 }else{
                     return res.send({
                         idea: idea._doc
+                    })
+                }
+            }
+        }
+        return res.send('-1')
+    }
+
+    static async randomIdea(req,res){
+        let{date,user_id,lastIdeaId} = req.query
+        if(date){
+            let queryDate = myUtils.toQueryDate(date)
+            let idea
+            let loop = 3
+            while(loop--){
+                let rand = Math.random()
+                idea = await db.idea.findOne({date: {$gte: queryDate[0], $lt: queryDate[1]},random:{$lt:rand}})
+                if(idea === null){
+                    idea = await db.idea.findOne({date: {$gte: queryDate[0], $lt: queryDate[1]},random:{$gte:rand}})
+                }
+                if(idea){
+                    if(!lastIdeaId || idea._id.toString() != lastIdeaId){
+                        break
+                    }
+                }else{
+                    break
+                }
+            }
+            if(idea){
+                //if the user like this idea
+                let inLikes = idea.likes.indexOf(db.ObjectId(user_id))
+                inLikes = inLikes!=-1?true:false
+                idea = idea._doc
+                idea.inLikes = inLikes
+                let userInfo = await db.user.findOne({_id:idea.author})
+                if(userInfo){
+                    let nickName = userInfo.nickName
+                    let authorAvatar = userInfo.avatarUrl
+                    Object.assign(idea,{
+                        authorNickName: nickName,
+                        authorAvatar: authorAvatar
+                    })
+                }else{
+                    //该用户走丢了
+                }
+                if(loop <= 0){
+                    idea.loopOver = true
+                }
+                let rec_id = idea.recommendation
+                let recommendation = await db.recommendation.findOne({_id:rec_id})
+                if(recommendation){
+                    let managerInfo = await db.manager.findOne({_id: recommendation.manager}, {username: 1})
+                    recommendation = recommendation._doc
+                    if (managerInfo) {
+                        Object.assign(recommendation, {
+                            managerUsername: managerInfo.username
+                        })
+                    }
+                    return res.send({
+                        idea: idea,
+                        recommendation: recommendation
+                    })
+                }else{
+                    return res.send({
+                        idea: idea
+                    })
+                }
+            }
+        }
+        return res.send('-1')
+    }
+
+    static async ideaInLikes(req,res){
+        let {idea_id,user_id} = req.query
+        if(idea_id){
+            let idea = await db.idea.findOne({_id:db.ObjectId(idea_id),likes:db.ObjectId(user_id)})
+            if(idea){
+                //remove
+                idea = await db.idea.findOneAndUpdate({_id:db.ObjectId(idea_id)},{$pull:{likes:db.ObjectId(user_id)},$inc:{points:-1}},{new:true})
+            }else{
+                //push
+                idea = await db.idea.findOneAndUpdate({_id:db.ObjectId(idea_id)},{$push:{likes:db.ObjectId(user_id)},$inc:{points:1}},{new:true})
+            }
+            if(idea){
+                let inLikes = idea.likes.indexOf(db.ObjectId(user_id))
+                return res.send({
+                    points: idea.points,
+                    inLikes: inLikes
+                })
+            }
+        }
+        return res.send('-1')
+    }
+
+    static async getFavorite(req,res){
+        let {user_id,date,category} = req.query
+        if(user_id&&category){
+            if(category==='date'&&date){
+                let queryDate = myUtils.toQueryDate(date)
+                let ideaArr = await db.idea.find({likes:db.ObjectId(user_id),date: {'$gte': queryDate[0], '$lt': queryDate[1]}})
+                if(ideaArr && ideaArr.length > 0){
+                    let favArr = []
+                    for(let i = 0;i < ideaArr.length;i++){
+                        let idea = ideaArr[i]._doc
+                        let userInfo = await db.user.findOne({_id:idea.author})
+                        if(userInfo){
+                            let nickName = userInfo.nickName
+                            let authorAvatar = userInfo.avatarUrl
+                            Object.assign(idea,{
+                                authorNickName: nickName,
+                                authorAvatar: authorAvatar
+                            })
+                        }
+                        let rec_id = idea.recommendation
+                        let recommendation = await db.recommendation.findOne({_id:rec_id})
+                        if(recommendation){
+                            let managerInfo = await db.manager.findOne({_id: recommendation.manager}, {username: 1})
+                            recommendation = recommendation._doc
+                            if (managerInfo) {
+                                Object.assign(recommendation, {
+                                    managerUsername: managerInfo.username
+                                })
+                            }
+                        }
+                        favArr.push({
+                            idea,recommendation
+                        })
+                    }
+                    return res.send({
+                        favArr
                     })
                 }
             }
@@ -235,6 +364,7 @@ export default class {
                 }
             }else{
                 contentToSound(content)
+                content = content.replace(/\r|\n/g,'  ')
             }
 
             //create idea
@@ -244,7 +374,8 @@ export default class {
                 recommendation: db.ObjectId(rec_id),
                 date: new Date(),
                 content: content,
-                soundFragments: fragments
+                soundFragments: fragments,
+                random: Math.random()
             }},{new:true,upsert:true})
             if(blindMode === true){
                 return res.send({
@@ -276,10 +407,10 @@ export default class {
                 if(userInfo){
                     let data = idea._doc
                     let nickName = userInfo.nickName
-                    let avatarUrl = userInfo.avatarUrl
+                    let authorAvatar = userInfo.avatarUrl
                     Object.assign(data,{
                         authorNickName: nickName,
-                        avatarUrl: avatarUrl
+                        authorAvatar: authorAvatar
                     })
                     return res.send(data)
                 }

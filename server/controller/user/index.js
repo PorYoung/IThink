@@ -5,8 +5,7 @@ import path from 'path'
 import myUtils from '../../common/utils'
 export default class {
     static async onLogin(req, res) {
-        let code = req.body.code
-        let userInfo = req.body.userInfo
+        let {code,userInfo,blindMode} = req.body
         if (code && userInfo) {
             //authenticate against wechat server
             let url = `${config.wechat_login_url}?appid=${config.wechat_AppID}&secret=${config.wechat_AppSecret}&js_code=${code}&grant_type=authorization_code`
@@ -34,7 +33,12 @@ export default class {
                     let Reg = new RegExp("/[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]/g")
                     let text = '作者，' + userInfo.nickName.replace(Reg,'')
                     await myUtils.tencent_tts(text,path.join('/static/sound/user',info.openid + '.mp3'))
-                    queryData = await db.user.create({openid:info.openid,nickName:userInfo.nickName,avatarUrl:userInfo.avatarUrl})
+                    if(''!==blindMode&&blindMode==='true'){
+                        blindMode = true
+                    }else{
+                        blindMode = false
+                    }
+                    queryData = await db.user.create({openid:info.openid,nickName:userInfo.nickName,avatarUrl:userInfo.avatarUrl,blindMode:blindMode})
                     //return first use flag to start using instruction in small program
                     isFirst = true
                 }else if(queryData.nickName!=userInfo.nickName||queryData.avatarUrl!=userInfo.avatarUrl){

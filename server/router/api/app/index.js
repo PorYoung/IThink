@@ -10,6 +10,7 @@ appRouter
     .get('/getHistory',Permission.permissionCheck,App.getHistory)
     .get('/randomIdea',Permission.permissionCheck,App.randomIdea)
     .get('/ideaInLikes',Permission.permissionCheck,App.ideaInLikes)
+    .get('/getFavorite',Permission.permissionCheck,App.getFavorite)
     .get('/getIdea',Permission.permissionCheck,App.getIdea)
     .get('/getPoints',Permission.permissionCheck,App.getPoints)
     .get('/getManagerDetail', Permission.permissionCheck, App.getManagerDetail)

@@ -187,9 +187,11 @@ export default class {
             if(idea){
                 //remove
                 idea = await db.idea.findOneAndUpdate({_id:db.ObjectId(idea_id)},{$pull:{likes:db.ObjectId(user_id)},$inc:{points:-1}},{new:true})
+                author = await db.user.findOneAndUpdate({_id:idea.author},{$inc:{points:-1}})
             }else{
                 //push
                 idea = await db.idea.findOneAndUpdate({_id:db.ObjectId(idea_id)},{$push:{likes:db.ObjectId(user_id)},$inc:{points:1}},{new:true})
+                author = await db.user.findOneAndUpdate({_id:idea.author},{$inc:{points:1}})
             }
             if(idea){
                 let inLikes = idea.likes.indexOf(db.ObjectId(user_id))
@@ -313,10 +315,8 @@ export default class {
                     if (idx === 2) {
                         text = '主要内容，'.concat(text)
                     }
-                    console.log(text)
                     fragments[idx] = await myUtils.xf_tts(text, filePath)
-                    console.log(fragments[idx])
-                        ++idx
+                    ++idx
                 }
                 let filePath = path.join('/static/sound/idea', _id.toString() + '_' + idx + '.mp3')
                 let start = (idx - 2) * myUtils.xf_tts_maxLength

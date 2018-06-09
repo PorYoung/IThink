@@ -145,8 +145,14 @@ export default class {
                     anIdea = await db.idea.find({date: {$gte: queryDate[0], $lt: queryDate[1]}}).skip(random).limit(1)
                     anIdea = anIdea[0]
                 }
+                if(anIdea && anIdea._id != idea._id){
+                    idea = anIdea
+                }
                 //if the user like this idea
-                let inLikes = idea.likes.indexOf(db.ObjectId(user_id))
+                let inLikes
+                if(idea.likes && idea.likes.length > 0){
+                    inLikes = idea.likes.indexOf(db.ObjectId(user_id))
+		        }
                 inLikes = inLikes!=-1?true:false
                 if(idea._doc){
                     idea = idea._doc

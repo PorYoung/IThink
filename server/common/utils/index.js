@@ -165,8 +165,14 @@ const xf_recogn = function (filePath) {
     })
 }
 
-const normalDate = () => {
-    let date = new Date()
+const normalDate = (date) => {
+    if(date){
+        if(!(date instanceof Date)){
+          date = new Date(date)
+        }
+      }else{
+        date = new Date()
+      }
     let dd = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate()
     return dd
 }

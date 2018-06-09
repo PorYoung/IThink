@@ -1,5 +1,6 @@
 import myUtils from '../../common/utils'
-import path, { resolve } from 'path'
+import path from 'path'
+import formidable from 'formidable'
 import fs from 'fs'
 import ffmpeg from 'fluent-ffmpeg'
 export default class {
@@ -137,10 +138,19 @@ export default class {
                 }
             }
             if(idea){
+                let anIdea
+                if(!!lastIdeaId && idea._id.toString() == lastIdeaId){
+                    let total = await db.idea.find().count()
+                    let random = Math.floor(Math.random() * total)
+                    anIdea = await db.idea.find({date: {$gte: queryDate[0], $lt: queryDate[1]}}).skip(random).limit(1)
+                    anIdea = anIdea[0]
+                }
                 //if the user like this idea
                 let inLikes = idea.likes.indexOf(db.ObjectId(user_id))
                 inLikes = inLikes!=-1?true:false
-                idea = idea._doc
+                if(idea._doc){
+                    idea = idea._doc
+                }
                 idea.inLikes = inLikes
                 let userInfo = await db.user.findOne({_id:idea.author})
                 if(userInfo){
@@ -153,7 +163,7 @@ export default class {
                 }else{
                     //该用户走丢了
                 }
-                if(loop <= 0){
+                if(loop <= 0 && !!lastIdeaId && idea._id.toString() == lastIdeaId){
                     idea.loopOver = true
                 }
                 let rec_id = idea.recommendation
@@ -184,6 +194,7 @@ export default class {
         let {idea_id,user_id} = req.query
         if(idea_id){
             let idea = await db.idea.findOne({_id:db.ObjectId(idea_id),likes:db.ObjectId(user_id)})
+            let author
             if(idea){
                 //remove
                 idea = await db.idea.findOneAndUpdate({_id:db.ObjectId(idea_id)},{$pull:{likes:db.ObjectId(user_id)},$inc:{points:-1}},{new:true})
@@ -254,17 +265,65 @@ export default class {
             content,
             blindMode,
             useRawAudio
-        } = req.body
-        if (rec_id && content && '' !== blindMode) {
+        } = req.query
+        let _id
+        let fragments = []
+        console.log(req.query)
+        let contentToSound = async(contentText)=>{
+            //content to sound
+            let contentStr = contentText.replace(/\r|\n|\s/g, '')
+            let len = contentStr.length
+            let idx = 2
+            while (len > myUtils.xf_tts_maxLength) {
+                let filePath = path.join('/static/sound/idea', _id.toString() + '_' + idx + '.mp3')
+                len -= myUtils.xf_tts_maxLength
+                let start = (idx - 2) * myUtils.xf_tts_maxLength
+                let end = start + myUtils.xf_tts_maxLength
+                let text = contentStr.substring(start, end)
+                if (idx === 2) {
+                    text = '主要内容，'.concat(text)
+                }
+                fragments[idx] = await myUtils.xf_tts(text, filePath)
+                ++idx
+            }
+            let filePath = path.join('/static/sound/idea', _id.toString() + '_' + idx + '.mp3')
+            let start = (idx - 2) * myUtils.xf_tts_maxLength
+            let end = start + myUtils.xf_tts_maxLength
+            let text = contentStr.substring(start, end)
+            fragments[idx] = await myUtils.xf_tts(text, filePath)
+            console.log(fragments)
+        }
+        let createIdea = async()=>{
+            //create idea
+            let idea = await db.idea.findOneAndUpdate({_id:_id},{$set:{
+                _id: _id,
+                author: db.ObjectId(user_id),
+                recommendation: db.ObjectId(rec_id),
+                date: new Date(),
+                content: content,
+                soundFragments: fragments,
+                random: Math.random()
+            }},{new:true,upsert:true})
+            console.log(idea)
+            if(blindMode === true){
+                return res.send({
+                    _id: idea._id,
+                    content: content,
+                    soundFragments: idea.soundFragments
+                })
+            }
+            return res.send({_id: _id})
+        }
+        if(rec_id && user_id){
+            blindMode = blindMode==='true'?true:false
+            useRawAudio = useRawAudio==='true'?true:false
             //check if have uploaded today
             let checkInfo = await db.idea.findOne({author:db.ObjectId(user_id),recommendation:db.ObjectId(rec_id)})
-            let _id
             if(checkInfo){
                 _id = checkInfo._id
             }else{
                 _id = new db.ObjectId()
             }
-            let fragments = []
             let Reg = new RegExp("/[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]/g")
             //author tts            
             let userPath = path.join('/static/sound/user', user_id.concat('.mp3'))
@@ -300,93 +359,76 @@ export default class {
             if (stat) {
                 fragments[1] = datePath
             }
-
-            let contentToSound = async(contentText)=>{
-                //content to sound
-                let contentStr = contentText.replace(/\r|\n|\s/g, '')
-                let len = contentStr.length
-                let idx = 2
-                while (len > myUtils.xf_tts_maxLength) {
-                    let filePath = path.join('/static/sound/idea', _id.toString() + '_' + idx + '.mp3')
-                    len -= myUtils.xf_tts_maxLength
-                    let start = (idx - 2) * myUtils.xf_tts_maxLength
-                    let end = start + myUtils.xf_tts_maxLength
-                    let text = contentStr.substring(start, end)
-                    if (idx === 2) {
-                        text = '主要内容，'.concat(text)
+            if(blindMode === false && content){
+                await contentToSound(content)
+                content = content.replace(/\r|\n/g,'  ')
+                await createIdea()
+            }else if(blindMode === true){
+                let form = new formidable.IncomingForm()
+                form.uploadDir = path.join(process.cwd(),'/static/temp')
+                form.maxFileSize = 20 * 1024 * 1024
+                form.parse(req)
+                form.on('fileBegin',(name,file) => {
+                    console.log(name,file)
+                    file.name = _id+'_2.mp3'
+                    if(useRawAudio === true){            
+                        file.path = path.join(path.join(process.cwd(),'/static/sound/idea',_id+'_2.mp3'))
+                    }else{
+                        file.path = path.join(process.cwd(),'/static/sound/temp',_id+'_2.mp3')
                     }
-                    fragments[idx] = await myUtils.xf_tts(text, filePath)
-                    ++idx
-                }
-                let filePath = path.join('/static/sound/idea', _id.toString() + '_' + idx + '.mp3')
-                let start = (idx - 2) * myUtils.xf_tts_maxLength
-                let end = start + myUtils.xf_tts_maxLength
-                let text = contentStr.substring(start, end)
-                fragments[idx] = await myUtils.xf_tts(text, filePath)
-            }
-
-            //take a judgement
-            if(blindMode === true){
-                if(useRawAudio === true){
-                    function writeSync(){
+                })
+                form.on('end', async(err) => {
+                    let mp3Path
+                    let newPath
+                    if(useRawAudio === true){
                         let savePath = path.join('/static/sound/idea',_id+'_2.mp3')
-                        let writeStream = fs.createWriteStream(path.join(process.cwd(),savePath))
-                        return new Promise((resolve,reject)=>{
-                            writeStream.once('end',()=>{
-                                resolve(savePath)
-                            })
-                        })
+                        mp3Path = path.join(process.cwd(),savePath)
+                        newPath = path.join(process.cwd(),'/static/sound/temp',_id+'_2.wav')
+                        fragments[2] = savePath
+                    }else{
+                        //voice recognization api
+                        mp3Path = path.join(process.cwd(),'/static/sound/temp',_id+'_2.mp3')
+                        newPath = path.join(process.cwd(),'/static/sound/temp',_id+'_2.wav')
                     }
-                    let savePath = await writeSync()
-                    fragments[2] = savePath
-                }else{
-                    //voice recognization api
-                    let mp3Path = path.join(process.cwd(),'/static/sound/temp',_id+'_2.mp3')
-                    let newPath = path.join(process.cwd(),'/static/sound/temp',_id+'_2.wav')
-                    fs.writeFileSync(mp3Path,content)
                     ffmpeg()
-                        .addInput(path.join(process.cwd(),'test.mp3'))
+                        .addInput(mp3Path)
                         .save(newPath)
                         .on("error", (err) => {
+                            fs.unlinkSync(mp3Path)
                             console.log(err)
+                            return res.send('-1')
                         })
                         .on("end", async() => {
                             // 转换成功 调用讯飞语音进行识别
                             let response = await myUtils.xf_recogn(newPath)
-                            if(response.code == '0' && response.data){
-                                //tts
-                                contentToSound(response.data)
-                                content = response.data
+                            console.log(response)
+                            if(response.code == '0'){
+                                if(response.data){
+                                    content = response.data
+                                }else{
+                                    content = '抱歉，AI没听清用户在说什么'
+                                }
+                                if(!useRawAudio){
+                                    //tts
+                                    await contentToSound(content)
+                                }
+                                await createIdea()
                             }else{
+                                fs.unlinkSync(mp3Path)
+                                fs.unlinkSync(newPath)
                                 return res.send('-1')
                             }
                         })
-                }
-            }else{
-                contentToSound(content)
-                content = content.replace(/\r|\n/g,'  ')
-            }
-
-            //create idea
-            let idea = await db.idea.findOneAndUpdate({_id:_id},{$set:{
-                _id: _id,
-                author: db.ObjectId(user_id),
-                recommendation: db.ObjectId(rec_id),
-                date: new Date(),
-                content: content,
-                soundFragments: fragments,
-                random: Math.random()
-            }},{new:true,upsert:true})
-            if(blindMode === true){
-                return res.send({
-                    _id: idea._id,
-                    content: content,
-                    soundFragments: idea.soundFragments
                 })
+                form.on('error', (err) => {
+                    return res.send('-1')
+                })
+            }else{
+                return res.send('-1')
             }
-            return res.send({_id: _id})
+        }else{
+            return res.send('-1')
         }
-        return res.send('-1')
     }
 
     static async previewIdeaSound(req,res){

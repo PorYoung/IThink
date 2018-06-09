@@ -14,6 +14,6 @@ appRouter
     .get('/getIdea',Permission.permissionCheck,App.getIdea)
     .get('/getPoints',Permission.permissionCheck,App.getPoints)
     .get('/getManagerDetail', Permission.permissionCheck, App.getManagerDetail)
-    .post('/publishIdea', Permission.permissionCheck, App.publishIdea)
+    .post('/publishIdea', App.publishIdea)
 
 export default appRouter

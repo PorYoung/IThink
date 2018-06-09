@@ -41,7 +41,12 @@ app.get('/tts',(req,res)=>{
     res.send('<a href="/speech_tencent">Tencent Test!</a><br><a href="/speech_xf">XF Test</a>')
 })
 app.get('/speech_tencent',async (req,res)=>{
-	let items = []
+	let items = [
+		['提示，在社区或收藏页面，左右滑动查看前一天或后一天的想法', 'help_10.mp3'],
+  ['提示，在社区或收藏页面，上下滑动查看上一条或下一条的想法', 'help_11.mp3'],
+  ['提示，移出成功', 'favorite_alert_removeFromLikesSuccess.mp3'],
+  ['想法', 'community_alert_showIdea.mp3'],
+	]
 	
 	for(let i = 0;i < items.length;i++){
 		let p = path.join('/static/sound/default',items[i][1])

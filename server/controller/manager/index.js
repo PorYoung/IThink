@@ -1,4 +1,4 @@
- import path, { resolve } from 'path'
+ import path from 'path'
  import md5 from 'md5'
  import formidable from 'formidable'
  import fs from 'fs'
@@ -144,10 +144,7 @@
                 fragments[1] = managerPath
             }
             //date tts
-            let dd = date.split('-')
-            if(dd[1][0] === '0'){
-                date = dd[0] + '-' + dd[1][1] + '-' + dd[2]
-            }
+            date = myUtils.normalDate(date)
             let datePath = path.join('/static/sound/date',date+'.mp3')
             stat = undefined
             try{

@@ -41,8 +41,8 @@ export default class {
                     queryData = await db.user.create({openid:info.openid,nickName:userInfo.nickName,avatarUrl:userInfo.avatarUrl,blindMode:blindMode})
                     //return first use flag to start using instruction in small program
                     isFirst = true
-                }else if(queryData.nickName!=userInfo.nickName||queryData.avatarUrl!=userInfo.avatarUrl){
-                    queryData = await db.user.updateOne({openid:info.openid},{nickName:userInfo.nickName,avatarUrl:userInfo.avatarUrl},{new:true})
+                }else if(queryData.nickName!=userInfo.nickName||queryData.avatarUrl!=userInfo.avatarUrl||queryData.blindMode!=blindMode){
+                    queryData = await db.user.update({openid:info.openid},{$set:{nickName:userInfo.nickName,avatarUrl:userInfo.avatarUrl,blindMode:blindMode}},{new:true})
                 }
                 req.session._id = queryData._id
                 return res.send({

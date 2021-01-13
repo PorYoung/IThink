@@ -1,3 +1,5 @@
+> [查看IThink小程序代码 https://git.weixin.qq.com/PorYoung/IThink.git](https://git.weixin.qq.com/PorYoung/IThink)
+
 # 2018年大学生微信小程序应用开发大赛参赛作品IThink介绍文档
 > 参赛团队：文字数字字母
 > IThink small program NodeJs back end
